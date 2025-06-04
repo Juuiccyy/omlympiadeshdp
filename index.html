@@ -98,19 +98,28 @@
           alert("Code incorrect");
         }
       }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('addPlayerForm');
+        if (form) {
+          form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!isAdmin) return showLoginPrompt();
+
+            const name = document.getElementById('playerName').value;
+            const score = parseInt(document.getElementById('initialScore').value) || 0;
+            if (!name) return alert("Nom requis");
+
+            const playerRef = db.ref("players").push();
+            playerRef.set({ name, score });
+            alert("Joueur ajouté !");
+            form.reset();
+          });
+        }
+      });
     </script>
 </head>
 <body>
-    <!-- Le reste du code HTML ne change pas, tu peux garder exactement ton interface actuelle. -->
-    <!-- À la fin de ton script principal (avant </body>), ajoute ceci : -->
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('button, input[type="submit"]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            if (!isAdmin) showLoginPrompt();
-          });
-        });
-      });
-    </script>
+    <!-- Ton HTML complet ici (non modifié) -->
 </body>
 </html>
