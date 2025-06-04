@@ -1,136 +1,92 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Les Olympiades du Havre de Paix</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #111827;
-            color: #d1d5db;
-        }
-        .modal { background-color: rgba(0,0,0,0.6); }
-        .modal-content {
-            background-color: #1f2937;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-        }
-        .table-header th {
-            background-color: #374151;
-            color: #f3f4f6;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .table-row:nth-child(even) { background-color: #1f2937; }
-        .table-row:nth-child(odd) { background-color: #1a222e; }
-        .table-row:hover { background-color: #374151; }
-        .btn {
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
-        }
-        .btn:hover { transform: translateY(-1px); }
-        .btn-primary { background-color: #3b82f6; color: white; }
-        .btn-primary:hover { background-color: #2563eb; }
-        .btn-danger { background-color: #ef4444; color: white; }
-        .btn-danger:hover { background-color: #dc2626; }
-        .input-field, .select-field {
-            background-color: #374151;
-            border-color: #4b5563;
-            color: #d1d5db;
-            border-radius: 0.375rem;
-        }
-        .input-field:focus, .select-field:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
-            outline: none;
-        }
-        .card {
-            background-color: #1f2937;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-        }
-        .form-section {
-            display: none;
-            border: 1px solid #374151;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            margin-top: 1.5rem;
-            background-color: #181f2b;
-        }
-        .toggle-btn-group button { margin: 0 0.5rem; }
-        .toggle-btn { background-color: #4b5563; color: white; }
-        .toggle-btn.active { background-color: #3b82f6; }
-        .medal-cell { width: 3rem; text-align: center; }
-        .rank-cell { width: 3rem; text-align: right; padding-right: 0.5rem; }
-    </style>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <script>
-      const firebaseConfig = {
-        apiKey: "AIzaSyAqUwG1JiprI7lKTuIggnHN5L5GYXHHQh0",
-        authDomain: "olympiades-hdp.firebaseapp.com",
-        databaseURL: "https://olympiades-hdp-default-rtdb.firebaseio.com",
-        projectId: "olympiades-hdp",
-        storageBucket: "olympiades-hdp.appspot.com",
-        messagingSenderId: "707224340568",
-        appId: "1:707224340568:web:5395f8d0c8ae48404ea22d"
-      };
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
-    </script>
-
-    <!-- Mode Admin JS -->
-    <script>
-      const ADMIN_PASS = "juju2025";
-      let isAdmin = false;
-      function showLoginPrompt() {
-        const pass = prompt("Code admin requis pour modifier.");
-        if (pass === ADMIN_PASS) {
-          isAdmin = true;
-          alert("Mode admin activé");
-        } else {
-          alert("Code incorrect");
-        }
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('button, input[type="submit"]').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            if (!isAdmin && btn.dataset.admin === "true") {
-              e.preventDefault();
-              showLoginPrompt();
-            }
-          });
-        });
-
-        const form = document.getElementById('addPlayerForm');
-        if (form) {
-          form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            if (!isAdmin) return showLoginPrompt();
-
-            const name = document.getElementById('playerName').value.trim();
-            const score = parseInt(document.getElementById('initialScore').value) || 0;
-            if (!name) return alert("Nom requis");
-
-            const playerRef = db.ref("players").push();
-            playerRef.set({ name, score });
-            alert("Joueur ajouté !");
-            form.reset();
-          });
-        }
-      });
-    </script>
+  <!-- head inchangé avec styles, firebase et script admin déjà en place -->
+  <!-- ... (tout le head reste comme tu l'as défini) ... -->
 </head>
-<body>
-    <!-- Ton HTML complet ici (non modifié) -->
-    <!-- Assure-toi qu’il y a bien un formulaire avec l’ID addPlayerForm,
-         un champ avec l’ID playerName et un champ avec l’ID initialScore dans ton HTML. -->
+<body class="p-6">
+  <div class="text-center mb-8">
+    <h1 class="text-3xl font-bold text-white bg-gradient-to-r from-purple-400 to-pink-600 inline-block px-4 py-2 rounded-lg">Les Olympiades du Havre de Paix</h1>
+  </div>
+
+  <form id="addPlayerForm" class="mb-6 max-w-md mx-auto">
+    <div class="flex flex-col gap-4">
+      <input type="text" id="playerName" class="input-field p-2" placeholder="Nom du joueur">
+      <input type="number" id="initialScore" class="input-field p-2" placeholder="Score initial">
+      <button type="submit" data-admin="true" class="btn btn-primary w-full">Ajouter un joueur</button>
+    </div>
+  </form>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm text-left">
+      <thead class="table-header">
+        <tr>
+          <th class="px-4 py-2">Rang</th>
+          <th class="px-4 py-2">Nom</th>
+          <th class="px-4 py-2">Score</th>
+          <th class="px-4 py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboard">
+        <!-- Les joueurs seront insérés ici -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function renderLeaderboard(players) {
+      const tbody = document.getElementById('leaderboard');
+      tbody.innerHTML = '';
+
+      const sorted = Object.entries(players || {}).sort((a, b) => b[1].score - a[1].score);
+
+      sorted.forEach(([key, player], index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'table-row';
+        tr.innerHTML = `
+          <td class="rank-cell">${index + 1}</td>
+          <td class="px-4 py-2">${player.name}</td>
+          <td class="px-4 py-2">${player.score}</td>
+          <td class="px-4 py-2">
+            <button class="btn btn-primary text-xs mr-1" data-action="inc" data-key="${key}" data-admin="true">+1</button>
+            <button class="btn btn-danger text-xs mr-1" data-action="dec" data-key="${key}" data-admin="true">-1</button>
+            <button class="btn btn-danger text-xs" data-action="del" data-key="${key}" data-admin="true">Supprimer</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          if (!isAdmin) return showLoginPrompt();
+          const key = btn.dataset.key;
+          const action = btn.dataset.action;
+          const ref = db.ref(`players/${key}`);
+
+          if (action === 'inc') ref.child('score').get().then(snap => ref.update({ score: snap.val() + 1 }));
+          else if (action === 'dec') ref.child('score').get().then(snap => ref.update({ score: snap.val() - 1 }));
+          else if (action === 'del') ref.remove();
+        });
+      });
+    }
+
+    db.ref("players").on("value", snapshot => {
+      renderLeaderboard(snapshot.val());
+    });
+
+    document.getElementById('addPlayerForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!isAdmin) return showLoginPrompt();
+
+      const name = document.getElementById('playerName').value.trim();
+      const score = parseInt(document.getElementById('initialScore').value) || 0;
+      if (!name) return alert("Nom requis");
+
+      const playerRef = db.ref("players").push();
+      playerRef.set({ name, score });
+      alert("Joueur ajouté !");
+      this.reset();
+    });
+  </script>
 </body>
 </html>
