@@ -1,143 +1,116 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Les Olympiades du Havre de Paix</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #0f172a;
-      color: #f3f4f6;
-    }
-    .btn {
-      transition: all 0.2s ease-in-out;
-    }
-    .btn:hover {
-      transform: scale(1.03);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Olympiades du Havre de Paix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            color: #d1d5db;
+        }
+        .modal { background-color: rgba(0,0,0,0.6); }
+        .modal-content {
+            background-color: #1f2937;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+        .table-header th {
+            background-color: #374151;
+            color: #f3f4f6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .table-row:nth-child(even) { background-color: #1f2937; }
+        .table-row:nth-child(odd) { background-color: #1a222e; }
+        .table-row:hover { background-color: #374151; }
+        .btn {
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background-color: #3b82f6; color: white; }
+        .btn-primary:hover { background-color: #2563eb; }
+        .btn-danger { background-color: #ef4444; color: white; }
+        .btn-danger:hover { background-color: #dc2626; }
+        .input-field, .select-field {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #d1d5db;
+            border-radius: 0.375rem;
+        }
+        .input-field:focus, .select-field:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+            outline: none;
+        }
+        .card {
+            background-color: #1f2937;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+        }
+        .form-section {
+            display: none;
+            border: 1px solid #374151;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+            background-color: #181f2b;
+        }
+        .toggle-btn-group button { margin: 0 0.5rem; }
+        .toggle-btn { background-color: #4b5563; color: white; }
+        .toggle-btn.active { background-color: #3b82f6; }
+        .medal-cell { width: 3rem; text-align: center; }
+        .rank-cell { width: 3rem; text-align: right; padding-right: 0.5rem; }
+    </style>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyAqUwG1JiprI7lKTuIggnHN5L5GYXHHQh0",
+        authDomain: "olympiades-hdp.firebaseapp.com",
+        databaseURL: "https://olympiades-hdp-default-rtdb.firebaseio.com",
+        projectId: "olympiades-hdp",
+        storageBucket: "olympiades-hdp.appspot.com",
+        messagingSenderId: "707224340568",
+        appId: "1:707224340568:web:5395f8d0c8ae48404ea22d"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+    </script>
+
+    <!-- Mode Admin JS -->
+    <script>
+      const ADMIN_PASS = "juju2025";
+      let isAdmin = false;
+      function showLoginPrompt() {
+        const pass = prompt("Code admin requis pour modifier.");
+        if (pass === ADMIN_PASS) {
+          isAdmin = true;
+          alert("Mode admin activé");
+        } else {
+          alert("Code incorrect");
+        }
+      }
+    </script>
 </head>
-<body class="flex flex-col items-center justify-start min-h-screen p-4">
-  <header class="text-center mb-6">
-    <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
-      🏆 Les Olympiades du Havre de Paix 🏆
-    </h1>
-    <p class="text-gray-400 mt-2 text-sm">(Version Locale - Données dans votre navigateur)</p>
-  </header>
-
-  <div id="adminLogin" class="mb-4">
-    <input type="password" id="adminCode" placeholder="Code admin" class="text-black p-2 rounded"/>
-    <button onclick="checkAdmin()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2">Activer</button>
-  </div>
-
-  <div id="controls" class="mb-6 hidden flex flex-wrap gap-2">
-    <input type="text" id="playerName" placeholder="Nom du joueur" class="text-black p-2 rounded"/>
-    <input type="number" id="playerScore" placeholder="Score" class="text-black p-2 rounded"/>
-    <button onclick="addPlayer()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Ajouter</button>
-  </div>
-
-  <div class="w-full max-w-4xl bg-gray-800 rounded-lg p-6 shadow-md">
-    <h2 class="text-center text-2xl font-semibold mb-4">Classement Actuel</h2>
-    <table class="table-auto w-full text-left border-collapse">
-      <thead class="bg-gray-700 text-gray-100">
-        <tr>
-          <th class="px-3 py-2 text-center">Méd.</th>
-          <th class="px-3 py-2 text-center">Rang</th>
-          <th class="px-3 py-2">Nom</th>
-          <th class="px-3 py-2">Score</th>
-          <th class="px-3 py-2 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="playerList" class="divide-y divide-gray-600"></tbody>
-    </table>
-  </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAqUwG1JiprI7lKTuIggnHN5L5GYXHHQh0",
-      authDomain: "olympiades-hdp.firebaseapp.com",
-      databaseURL: "https://olympiades-hdp-default-rtdb.firebaseio.com",
-      projectId: "olympiades-hdp",
-      storageBucket: "olympiades-hdp.appspot.com",
-      messagingSenderId: "707224340568",
-      appId: "1:707224340568:web:5395f8d0c8ae48404ea22d"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const dbRef = db.ref("players");
-    const ADMIN_PASS = "juju2025";
-    let isAdmin = false;
-
-    function checkAdmin() {
-      const val = document.getElementById("adminCode").value;
-      if (val === ADMIN_PASS) {
-        isAdmin = true;
-        document.getElementById("controls").classList.remove("hidden");
-        document.getElementById("adminLogin").classList.add("hidden");
-      } else {
-        alert("Code incorrect !");
-      }
-    }
-
-    function addPlayer() {
-      if (!isAdmin) return;
-      const name = document.getElementById("playerName").value.trim();
-      const score = parseInt(document.getElementById("playerScore").value);
-      if (name && !isNaN(score)) {
-        dbRef.once("value", snapshot => {
-          const existing = snapshot.val() || {};
-          const exists = Object.values(existing).some(player => player.name.toLowerCase() === name.toLowerCase());
-          if (exists) {
-            alert("Ce joueur existe déjà.");
-          } else {
-            dbRef.push({ name, score });
-            document.getElementById("playerName").value = "";
-            document.getElementById("playerScore").value = "";
-          }
+<body>
+    <!-- Le reste du code HTML ne change pas, tu peux garder exactement ton interface actuelle. -->
+    <!-- À la fin de ton script principal (avant </body>), ajoute ceci : -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('button, input[type="submit"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (!isAdmin) showLoginPrompt();
+          });
         });
-      }
-    }
-
-    function deletePlayer(id) {
-      if (!isAdmin) return;
-      dbRef.child(id).remove();
-    }
-
-    dbRef.on("value", (snapshot) => {
-      const players = snapshot.val();
-      const list = document.getElementById("playerList");
-      list.innerHTML = "";
-      if (players) {
-        const sorted = Object.entries(players).sort(([, a], [, b]) => b.score - a.score);
-        sorted.forEach(([id, player], index) => {
-          const rank = index + 1;
-          let medal = "";
-          if (rank === 1) medal = "🥇";
-          else if (rank === 2) medal = "🥈";
-          else if (rank === 3) medal = "🥉";
-
-          const row = `<tr class="hover:bg-gray-700">
-            <td class="text-center py-2">${medal}</td>
-            <td class="text-center py-2">${rank}</td>
-            <td class="py-2">${player.name}</td>
-            <td class="py-2">${player.score}</td>
-            <td class="text-center py-2">
-              <button onclick="deletePlayer('${id}')" class="bg-red-500 hover:bg-red-700 text-white text-sm py-1 px-2 rounded">
-                <i class="fas fa-trash-alt"></i>
-              </button>
-            </td>
-          </tr>`;
-          list.innerHTML += row;
-        });
-      }
-    });
-  </script>
+      });
+    </script>
 </body>
 </html>
