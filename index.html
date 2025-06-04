@@ -1,8 +1,91 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <!-- head inchangé avec styles, firebase et script admin déjà en place -->
-  <!-- ... (tout le head reste comme tu l'as défini) ... -->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Les Olympiades du Havre de Paix</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #111827;
+      color: #d1d5db;
+    }
+    .modal { background-color: rgba(0,0,0,0.6); }
+    .modal-content {
+      background-color: #1f2937;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    }
+    .table-header th {
+      background-color: #374151;
+      color: #f3f4f6;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .table-row:nth-child(even) { background-color: #1f2937; }
+    .table-row:nth-child(odd) { background-color: #1a222e; }
+    .table-row:hover { background-color: #374151; }
+    .btn {
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background-color: #3b82f6; color: white; }
+    .btn-primary:hover { background-color: #2563eb; }
+    .btn-danger { background-color: #ef4444; color: white; }
+    .btn-danger:hover { background-color: #dc2626; }
+    .input-field, .select-field {
+      background-color: #374151;
+      border-color: #4b5563;
+      color: #d1d5db;
+      border-radius: 0.375rem;
+    }
+    .input-field:focus, .select-field:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+      outline: none;
+    }
+    .rank-cell { width: 3rem; text-align: right; padding-right: 0.5rem; }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAqUwG1JiprI7lKTuIggnHN5L5GYXHHQh0",
+      authDomain: "olympiades-hdp.firebaseapp.com",
+      databaseURL: "https://olympiades-hdp-default-rtdb.firebaseio.com",
+      projectId: "olympiades-hdp",
+      storageBucket: "olympiades-hdp.appspot.com",
+      messagingSenderId: "707224340568",
+      appId: "1:707224340568:web:5395f8d0c8ae48404ea22d"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  </script>
+
+  <!-- Mode Admin JS -->
+  <script>
+    const ADMIN_PASS = "juju2025";
+    let isAdmin = false;
+    function showLoginPrompt() {
+      const pass = prompt("Code admin requis pour modifier.");
+      if (pass === ADMIN_PASS) {
+        isAdmin = true;
+        alert("Mode admin activé");
+      } else {
+        alert("Code incorrect");
+      }
+    }
+  </script>
+</head>
+
 </head>
 <body class="p-6">
   <div class="text-center mb-8">
