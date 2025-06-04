@@ -1,85 +1,118 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Olympiades du Havre de Paix</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Olympiades du Havre de Paix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
-<body class="bg-gray-900 text-white font-sans flex flex-col items-center justify-start min-h-screen p-4">
-  <h1 class="text-4xl font-bold mb-4 text-center">🏆 Olympiades du Havre de Paix 🏆</h1>
+<body class="bg-gray-900 text-white min-h-screen p-6">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold text-center mb-6">🏆 Olympiades du Havre de Paix 🏆</h1>
 
-  <div id="adminLogin" class="mb-4">
-    <input type="password" id="adminCode" placeholder="Code admin" class="text-black p-2 rounded"/>
-    <button onclick="checkAdmin()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2">Activer</button>
-  </div>
+        <div id="adminLogin" class="mb-6">
+            <input type="password" id="adminCode" placeholder="Code admin" class="text-black p-2 rounded"/>
+            <button onclick="checkAdmin()" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded ml-2">Activer</button>
+        </div>
 
-  <div id="controls" class="mb-6 hidden">
-    <input type="text" id="playerName" placeholder="Nom du joueur" class="text-black p-2 rounded"/>
-    <input type="number" id="playerScore" placeholder="Score" class="text-black p-2 rounded ml-2"/>
-    <button onclick="addPlayer()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-2">Ajouter</button>
-  </div>
+        <div id="controls" class="space-y-4 hidden">
+            <div>
+                <input type="text" id="playerName" placeholder="Nom du joueur" class="text-black p-2 rounded w-1/2"/>
+                <input type="number" id="playerScore" placeholder="Score" class="text-black p-2 rounded w-1/4 ml-2"/>
+                <button onclick="addPlayer()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded ml-2">Ajouter</button>
+            </div>
+            <div>
+                <select id="playerSelect" class="text-black p-2 rounded w-2/3">
+                    <option value="">-- Choisir un joueur --</option>
+                </select>
+                <input type="number" id="pointsToAdd" placeholder="Points à ajouter" class="text-black p-2 rounded w-1/4 ml-2"/>
+                <button onclick="updatePlayerScore()" class="bg-yellow-600 hover:bg-yellow-800 text-white font-bold py-2 px-4 rounded ml-2">Modifier</button>
+            </div>
+        </div>
 
-  <table class="table-auto w-full max-w-2xl text-left border-collapse border border-gray-700">
-    <thead>
-      <tr>
-        <th class="border px-4 py-2">Nom</th>
-        <th class="border px-4 py-2">Score</th>
-      </tr>
-    </thead>
-    <tbody id="playerList"></tbody>
-  </table>
+        <table class="table-auto w-full mt-6 border-collapse border border-gray-700">
+            <thead>
+                <tr>
+                    <th class="border px-4 py-2">Nom</th>
+                    <th class="border px-4 py-2">Score</th>
+                </tr>
+            </thead>
+            <tbody id="playerList"></tbody>
+        </table>
+    </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAqUwG1JiprI7lKTuIggnHN5L5GYXHHQh0",
-      authDomain: "olympiades-hdp.firebaseapp.com",
-      databaseURL: "https://olympiades-hdp-default-rtdb.firebaseio.com",
-      projectId: "olympiades-hdp",
-      storageBucket: "olympiades-hdp.firebasestorage.app",
-      messagingSenderId: "707224340568",
-      appId: "1:707224340568:web:5395f8d0c8ae48404ea22d"
-    };
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqUwG1JiprI7lKTuIggnHN5L5GYXHHQh0",
+            authDomain: "olympiades-hdp.firebaseapp.com",
+            databaseURL: "https://olympiades-hdp-default-rtdb.firebaseio.com",
+            projectId: "olympiades-hdp",
+            storageBucket: "olympiades-hdp.appspot.com",
+            messagingSenderId: "707224340568",
+            appId: "1:707224340568:web:5395f8d0c8ae48404ea22d"
+        };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const dbRef = db.ref("players");
-    const ADMIN_PASS = "juju2025";
-    let isAdmin = false;
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const dbRef = db.ref("players");
+        const ADMIN_PASS = "juju2025";
+        let isAdmin = false;
+        let playerData = {};
 
-    function checkAdmin() {
-      const val = document.getElementById("adminCode").value;
-      if (val === ADMIN_PASS) {
-        isAdmin = true;
-        document.getElementById("controls").classList.remove("hidden");
-        document.getElementById("adminLogin").classList.add("hidden");
-      } else {
-        alert("Code incorrect !");
-      }
-    }
+        function checkAdmin() {
+            const val = document.getElementById("adminCode").value;
+            if (val === ADMIN_PASS) {
+                isAdmin = true;
+                document.getElementById("controls").classList.remove("hidden");
+                document.getElementById("adminLogin").classList.add("hidden");
+            } else {
+                alert("Code incorrect !");
+            }
+        }
 
-    function addPlayer() {
-      if (!isAdmin) return;
-      const name = document.getElementById("playerName").value;
-      const score = parseInt(document.getElementById("playerScore").value);
-      if (name && !isNaN(score)) {
-        dbRef.push({ name, score });
-        document.getElementById("playerName").value = "";
-        document.getElementById("playerScore").value = "";
-      }
-    }
+        function addPlayer() {
+            if (!isAdmin) return;
+            const name = document.getElementById("playerName").value;
+            const score = parseInt(document.getElementById("playerScore").value);
+            if (name && !isNaN(score)) {
+                dbRef.push({ name, score });
+                document.getElementById("playerName").value = "";
+                document.getElementById("playerScore").value = "";
+            }
+        }
 
-    dbRef.on("value", (snapshot) => {
-      const players = snapshot.val();
-      const list = document.getElementById("playerList");
-      list.innerHTML = "";
-      for (let id in players) {
-        const row = `<tr><td class="border px-4 py-2">${players[id].name}</td><td class="border px-4 py-2">${players[id].score}</td></tr>`;
-        list.innerHTML += row;
-      }
-    });
-  </script>
+        function updatePlayerScore() {
+            if (!isAdmin) return;
+            const playerId = document.getElementById("playerSelect").value;
+            const points = parseInt(document.getElementById("pointsToAdd").value);
+            if (playerId && !isNaN(points)) {
+                const currentScore = playerData[playerId].score || 0;
+                db.ref("players/" + playerId).update({ score: currentScore + points });
+                document.getElementById("pointsToAdd").value = "";
+            }
+        }
+
+        dbRef.on("value", (snapshot) => {
+            const players = snapshot.val();
+            const list = document.getElementById("playerList");
+            const select = document.getElementById("playerSelect");
+            list.innerHTML = "";
+            select.innerHTML = '<option value="">-- Choisir un joueur --</option>';
+            playerData = {};
+
+            for (let id in players) {
+                const player = players[id];
+                playerData[id] = player;
+
+                list.innerHTML += `<tr><td class="border px-4 py-2">${player.name}</td><td class="border px-4 py-2">${player.score}</td></tr>`;
+                select.innerHTML += `<option value="${id}">${player.name}</option>`;
+            }
+        });
+
+        // Pour forcer l'abandon du localStorage si besoin :
+        localStorage.clear();
+    </script>
 </body>
 </html>
