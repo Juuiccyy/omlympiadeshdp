@@ -9,31 +9,54 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      color: #f3f4f6;
+    }
+    .btn {
+      transition: all 0.2s ease-in-out;
+    }
+    .btn:hover {
+      transform: scale(1.03);
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-white font-sans flex flex-col items-center justify-start min-h-screen p-4">
-  <h1 class="text-4xl font-bold mb-4 text-center">🏆 Les Olympiades du Havre de Paix 🏆</h1>
+<body class="flex flex-col items-center justify-start min-h-screen p-4">
+  <header class="text-center mb-6">
+    <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
+      🏆 Les Olympiades du Havre de Paix 🏆
+    </h1>
+    <p class="text-gray-400 mt-2 text-sm">(Version Locale - Données dans votre navigateur)</p>
+  </header>
 
   <div id="adminLogin" class="mb-4">
     <input type="password" id="adminCode" placeholder="Code admin" class="text-black p-2 rounded"/>
     <button onclick="checkAdmin()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2">Activer</button>
   </div>
 
-  <div id="controls" class="mb-6 hidden">
+  <div id="controls" class="mb-6 hidden flex flex-wrap gap-2">
     <input type="text" id="playerName" placeholder="Nom du joueur" class="text-black p-2 rounded"/>
-    <input type="number" id="playerScore" placeholder="Score" class="text-black p-2 rounded ml-2"/>
-    <button onclick="addPlayer()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-2">Ajouter</button>
+    <input type="number" id="playerScore" placeholder="Score" class="text-black p-2 rounded"/>
+    <button onclick="addPlayer()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Ajouter</button>
   </div>
 
-  <table class="table-auto w-full max-w-2xl text-left border-collapse border border-gray-700">
-    <thead>
-      <tr>
-        <th class="border px-4 py-2">Nom</th>
-        <th class="border px-4 py-2">Score</th>
-        <th class="border px-4 py-2">Actions</th>
-      </tr>
-    </thead>
-    <tbody id="playerList"></tbody>
-  </table>
+  <div class="w-full max-w-4xl bg-gray-800 rounded-lg p-6 shadow-md">
+    <h2 class="text-center text-2xl font-semibold mb-4">Classement Actuel</h2>
+    <table class="table-auto w-full text-left border-collapse">
+      <thead class="bg-gray-700 text-gray-100">
+        <tr>
+          <th class="px-3 py-2 text-center">Méd.</th>
+          <th class="px-3 py-2 text-center">Rang</th>
+          <th class="px-3 py-2">Nom</th>
+          <th class="px-3 py-2">Score</th>
+          <th class="px-3 py-2 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="playerList" class="divide-y divide-gray-600"></tbody>
+    </table>
+  </div>
 
   <script>
     const firebaseConfig = {
@@ -93,8 +116,24 @@
       list.innerHTML = "";
       if (players) {
         const sorted = Object.entries(players).sort(([, a], [, b]) => b.score - a.score);
-        sorted.forEach(([id, player]) => {
-          const row = `<tr><td class="border px-4 py-2">${player.name}</td><td class="border px-4 py-2">${player.score}</td><td class="border px-4 py-2"><button onclick="deletePlayer('${id}')" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded">Supprimer</button></td></tr>`;
+        sorted.forEach(([id, player], index) => {
+          const rank = index + 1;
+          let medal = "";
+          if (rank === 1) medal = "🥇";
+          else if (rank === 2) medal = "🥈";
+          else if (rank === 3) medal = "🥉";
+
+          const row = `<tr class="hover:bg-gray-700">
+            <td class="text-center py-2">${medal}</td>
+            <td class="text-center py-2">${rank}</td>
+            <td class="py-2">${player.name}</td>
+            <td class="py-2">${player.score}</td>
+            <td class="text-center py-2">
+              <button onclick="deletePlayer('${id}')" class="bg-red-500 hover:bg-red-700 text-white text-sm py-1 px-2 rounded">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>`;
           list.innerHTML += row;
         });
       }
