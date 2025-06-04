@@ -3,116 +3,546 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Les Olympiades du Havre de Paix</title>
+    <title>Les Olympiades du Havre de Paix (Local)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #111827; /* bg-gray-900 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        .modal { background-color: rgba(0,0,0,0.6); }
+        .modal-content { 
+            background-color: #1f2937; /* bg-gray-800 */
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); 
+        }
+        .table-header th { 
+            background-color: #374151; /* bg-gray-700 */
+            color: #f3f4f6; /* text-gray-100 */
+            position: sticky; 
+            top: 0;
+            z-index: 10;
+        }
+        .table-row:nth-child(even) { background-color: #1f2937; }
+        .table-row:nth-child(odd) { background-color: #1a222e; }
+        .table-row:hover { background-color: #374151; }
+
+        .btn { 
+            transition: all 0.2s ease-in-out; 
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06); 
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background-color: #3b82f6; color: white; }
+        .btn-primary:hover { background-color: #2563eb; }
+        .btn-danger { background-color: #ef4444; color: white; }
+        .btn-danger:hover { background-color: #dc2626; }
+
+        .input-field, .select-field { 
+            background-color: #374151; 
+            border-color: #4b5563; 
+            color: #d1d5db; 
+            border-radius: 0.375rem; 
+        }
+        .input-field:focus, .select-field:focus { 
+            border-color: #3b82f6; 
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4); 
+            outline: none; 
+        }
+        .card { 
+            background-color: #1f2937; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); 
+        }
+        .form-section { 
+            display: none; 
+            border: 1px solid #374151; 
+            padding: 1.5rem; 
+            border-radius: 0.5rem; 
+            margin-top: 1.5rem; 
+            background-color: #181f2b; 
+        }
+        .toggle-btn-group button { margin: 0 0.5rem; }
+        .toggle-btn { background-color: #4b5563; color: white; }
+        .toggle-btn.active { background-color: #3b82f6; }
+        
+        .medal-cell {
+            width: 3rem; 
+            text-align: center;
+        }
+        .rank-cell {
+            width: 3rem; 
+            text-align: right;
+            padding-right: 0.5rem; 
+        }
+        /* Styles pour .score-indicator et .indicator-* sont supprimés car non utilisés */
+
+    </style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAqUwG1JiprI7lKTuIggnHN5L5GYXHHQh0",
+    authDomain: "olympiades-hdp.firebaseapp.com",
+    databaseURL: "https://olympiades-hdp-default-rtdb.firebaseio.com",
+    projectId: "olympiades-hdp",
+    storageBucket: "olympiades-hdp.firebasestorage.app",
+    messagingSenderId: "707224340568",
+    appId: "1:707224340568:web:5395f8d0c8ae48404ea22d"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+</script>
+
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-6">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-4xl font-bold text-center mb-6">🏆 Olympiades du Havre de Paix 🏆</h1>
+<body class="min-h-screen flex flex-col items-center pt-8 px-4 pb-8">
 
-        <div id="adminLogin" class="mb-6">
-            <input type="password" id="adminCode" placeholder="Code admin" class="text-black p-2 rounded"/>
-            <button onclick="checkAdmin()" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded ml-2">Activer</button>
+    <div class="w-full max-w-5xl">
+        <header class="mb-10 text-center">
+            <h1 class="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 pb-2">
+                🏆 Les Olympiades du Havre de Paix 🏆
+            </h1>
+            <p class="text-md text-gray-500 mt-2">(Version Locale - Données dans votre navigateur)</p>
+        </header>
+
+        <div class="flex justify-center space-x-4 mb-8 toggle-btn-group">
+            <button id="toggleAddPlayerFormBtn" class="btn toggle-btn inactive font-semibold py-2.5 px-5 rounded-lg shadow-lg">
+                <i class="fas fa-user-plus mr-2"></i>Ajouter Joueur
+            </button>
+            <button id="toggleUpdateScoreFormBtn" class="btn toggle-btn inactive font-semibold py-2.5 px-5 rounded-lg shadow-lg">
+                <i class="fas fa-edit mr-2"></i>Gérer Scores
+            </button>
         </div>
 
-        <div id="controls" class="space-y-4 hidden">
-            <div>
-                <input type="text" id="playerName" placeholder="Nom du joueur" class="text-black p-2 rounded w-1/2"/>
-                <input type="number" id="playerScore" placeholder="Score" class="text-black p-2 rounded w-1/4 ml-2"/>
-                <button onclick="addPlayer()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded ml-2">Ajouter</button>
+        <div id="addPlayerSection" class="form-section card">
+             <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-100">Ajouter un Joueur</h2>
+                <button id="closeAddPlayerFormBtn" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fas fa-times fa-lg"></i>
+                </button>
             </div>
-            <div>
-                <select id="playerSelect" class="text-black p-2 rounded w-2/3">
-                    <option value="">-- Choisir un joueur --</option>
-                </select>
-                <input type="number" id="pointsToAdd" placeholder="Points à ajouter" class="text-black p-2 rounded w-1/4 ml-2"/>
-                <button onclick="updatePlayerScore()" class="bg-yellow-600 hover:bg-yellow-800 text-white font-bold py-2 px-4 rounded ml-2">Modifier</button>
+            <form id="addPlayerForm" class="space-y-4">
+                <div>
+                    <label for="playerName" class="block text-sm font-medium text-gray-300 mb-1">Nom du Joueur</label>
+                    <input type="text" id="playerName" name="playerName" required
+                           class="mt-1 block w-full input-field p-2.5">
+                </div>
+                <div>
+                    <label for="initialScore" class="block text-sm font-medium text-gray-300 mb-1">Score Initial</label>
+                    <input type="number" id="initialScore" name="initialScore" value="0" required
+                           class="mt-1 block w-full input-field p-2.5">
+                </div>
+                <button type="submit"
+                        class="w-full btn btn-primary font-semibold py-2.5 px-4 rounded-lg shadow-md">
+                    <i class="fas fa-plus-circle mr-2"></i>Confirmer Ajout
+                </button>
+            </form>
+        </div>
+
+        <div id="updateScoreSection" class="form-section card">
+             <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-100">Mettre à Jour le Score</h2>
+                <button id="closeUpdateScoreFormBtn" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fas fa-times fa-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <label for="playerSelectUpdate" class="block text-sm font-medium text-gray-300 mb-1">Sélectionner Joueur</label>
+                    <select id="playerSelectUpdate" name="playerSelectUpdate" required
+                            class="mt-1 block w-full select-field p-2.5">
+                        <option value="">-- Choisir un joueur --</option>
+                    </select>
+                </div>
+
+                <div class="border-t border-gray-700 pt-4">
+                    <h3 class="text-lg font-medium text-gray-200 mb-2">Remplacer le Score Total</h3>
+                    <div>
+                        <label for="newScore" class="block text-sm font-medium text-gray-300 mb-1">Nouveau Score Total</label>
+                        <input type="number" id="newScore" name="newScore"
+                               class="mt-1 block w-full input-field p-2.5">
+                    </div>
+                    <button id="replaceScoreButton" type="button"
+                            class="mt-3 w-full btn btn-primary font-semibold py-2.5 px-4 rounded-lg shadow-md">
+                        <i class="fas fa-exchange-alt mr-2"></i>Remplacer Score
+                    </button>
+                </div>
+
+                <div class="border-t border-gray-700 pt-4">
+                    <h3 class="text-lg font-medium text-gray-200 mb-2">Ajouter des Points au Score Actuel</h3>
+                    <div>
+                        <label for="pointsToAdd" class="block text-sm font-medium text-gray-300 mb-1">Points à Ajouter/Retirer</label>
+                        <input type="number" id="pointsToAdd" name="pointsToAdd"
+                               class="mt-1 block w-full input-field p-2.5" placeholder="Ex: 10 ou -5">
+                    </div>
+                    <button id="addPointsButton" type="button"
+                            class="mt-3 w-full btn btn-primary font-semibold py-2.5 px-4 rounded-lg shadow-md">
+                        <i class="fas fa-plus-minus mr-2"></i>Modifier Points
+                    </button>
+                </div>
             </div>
         </div>
 
-        <table class="table-auto w-full mt-6 border-collapse border border-gray-700">
-            <thead>
-                <tr>
-                    <th class="border px-4 py-2">Nom</th>
-                    <th class="border px-4 py-2">Score</th>
-                </tr>
-            </thead>
-            <tbody id="playerList"></tbody>
-        </table>
+        <div class="card p-6 overflow-x-auto mt-8">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-100 text-center">Classement Actuel</h2>
+            <div id="loadingMessage" class="text-center text-gray-400 py-4">Chargement du leaderboard...</div>
+            <table class="min-w-full divide-y divide-gray-700 hidden" id="leaderboardTable">
+                <thead class="table-header">
+                    <tr>
+                        <th scope="col" class="px-3 py-3 text-center text-xs font-medium uppercase tracking-wider medal-cell">Méd.</th>
+                        <th scope="col" class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider rank-cell">Rang</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nom du Joueur</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Score</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardTableBody" class="divide-y divide-gray-600">
+                    </tbody>
+            </table>
+            <div id="emptyLeaderboardMessage" class="text-center text-gray-400 py-4 hidden">Aucun joueur dans le leaderboard. Ajoutez-en pour commencer !</div>
+        </div>
+
+        <div id="messageDiv" class="fixed bottom-4 right-4 p-4 rounded-lg shadow-xl text-white z-50" role="alert" style="display: none;"></div>
+
+    </div>
+
+    <div id="deleteConfirmationModal" class="fixed inset-0 z-[100] overflow-y-auto modal items-center justify-center hidden">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-900 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom modal-content rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div>
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-200">
+                        <i class="fas fa-exclamation-triangle fa-lg text-red-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-5">
+                        <h3 class="text-lg leading-6 font-medium text-gray-100" id="modalTitle">
+                            Supprimer le joueur ?
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-400" id="modalMessage">
+                                Êtes-vous sûr de vouloir supprimer ce joueur ? Cette action est irréversible.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                    <button id="confirmDeleteButton" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 btn-danger text-base font-medium sm:col-start-2 sm:text-sm">
+                        <i class="fas fa-trash-alt mr-2"></i>Supprimer
+                    </button>
+                    <button id="cancelDeleteButton" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-4 py-2 bg-gray-700 text-base font-medium text-gray-200 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm">
+                        <i class="fas fa-times mr-2"></i>Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAqUwG1JiprI7lKTuIggnHN5L5GYXHHQh0",
-            authDomain: "olympiades-hdp.firebaseapp.com",
-            databaseURL: "https://olympiades-hdp-default-rtdb.firebaseio.com",
-            projectId: "olympiades-hdp",
-            storageBucket: "olympiades-hdp.appspot.com",
-            messagingSenderId: "707224340568",
-            appId: "1:707224340568:web:5395f8d0c8ae48404ea22d"
-        };
+        const LOCAL_STORAGE_KEY = 'leaderboardAppLocalPlayers_v4'; // Nouvelle version pour score simple
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const dbRef = db.ref("players");
-        const ADMIN_PASS = "juju2025";
-        let isAdmin = false;
-        let playerData = {};
+        const addPlayerFormEl = document.getElementById('addPlayerForm');
+        const playerNameInput = document.getElementById('playerName');
+        const initialScoreInput = document.getElementById('initialScore');
+        const playerSelectUpdate = document.getElementById('playerSelectUpdate');
+        const newScoreInput = document.getElementById('newScore');
+        const replaceScoreButton = document.getElementById('replaceScoreButton');
+        const pointsToAddInput = document.getElementById('pointsToAdd');
+        const addPointsButton = document.getElementById('addPointsButton');
+        const leaderboardTableBody = document.getElementById('leaderboardTableBody');
+        const messageDiv = document.getElementById('messageDiv');
+        const loadingMessageDiv = document.getElementById('loadingMessage');
+        const leaderboardTable = document.getElementById('leaderboardTable');
+        const emptyLeaderboardMessageDiv = document.getElementById('emptyLeaderboardMessage');
+        const deleteModal = document.getElementById('deleteConfirmationModal');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteButton');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteButton');
+        let playerToDeleteId = null;
+        const toggleAddPlayerFormBtn = document.getElementById('toggleAddPlayerFormBtn');
+        const toggleUpdateScoreFormBtn = document.getElementById('toggleUpdateScoreFormBtn');
+        const addPlayerSection = document.getElementById('addPlayerSection');
+        const updateScoreSection = document.getElementById('updateScoreSection');
+        const closeAddPlayerFormBtn = document.getElementById('closeAddPlayerFormBtn');
+        const closeUpdateScoreFormBtn = document.getElementById('closeUpdateScoreFormBtn');
 
-        function checkAdmin() {
-            const val = document.getElementById("adminCode").value;
-            if (val === ADMIN_PASS) {
-                isAdmin = true;
-                document.getElementById("controls").classList.remove("hidden");
-                document.getElementById("adminLogin").classList.add("hidden");
+        const defaultPlayersData = [
+            { name: "Juuicyy", score: 0 }, { name: "Psylo", score: 0 },
+            { name: "Carotte", score: 0 }, { name: "Lucy", score: 0 },
+            { name: "Mimi", score: 0 }, { name: "GigZ", score: 0 },
+            { name: "Pwouah", score: 0 }
+        ];
+
+        function getPlayersFromStorage() { return localStorage.getItem(LOCAL_STORAGE_KEY) ? JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) : null; }
+        function savePlayersToStorage(players) { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(players)); }
+        function generatePlayerId() { return Date.now().toString() + Math.random().toString(36).substring(2,7); }
+        
+        function initializeDefaultPlayers() {
+            let players = getPlayersFromStorage();
+            if (!players || players.length === 0) {
+                players = defaultPlayersData.map(player => ({ ...player, id: generatePlayerId() }));
+                savePlayersToStorage(players);
+                showMessage("Joueurs par défaut initialisés.", "info");
+            }
+            return players;
+        }
+
+        function setActiveButton(activeBtn, inactiveBtn) { activeBtn.classList.remove('inactive'); activeBtn.classList.add('active'); inactiveBtn.classList.remove('active'); inactiveBtn.classList.add('inactive'); }
+        toggleAddPlayerFormBtn.addEventListener('click', () => { addPlayerSection.style.display = 'block'; updateScoreSection.style.display = 'none'; setActiveButton(toggleAddPlayerFormBtn, toggleUpdateScoreFormBtn); addPlayerFormEl.reset(); });
+        toggleUpdateScoreFormBtn.addEventListener('click', () => { updateScoreSection.style.display = 'block'; addPlayerSection.style.display = 'none'; setActiveButton(toggleUpdateScoreFormBtn, toggleAddPlayerFormBtn); playerSelectUpdate.value = ""; newScoreInput.value = ""; pointsToAddInput.value = ""; });
+        closeAddPlayerFormBtn.addEventListener('click', () => { addPlayerSection.style.display = 'none'; toggleAddPlayerFormBtn.classList.remove('active'); toggleAddPlayerFormBtn.classList.add('inactive'); });
+        closeUpdateScoreFormBtn.addEventListener('click', () => { updateScoreSection.style.display = 'none'; toggleUpdateScoreFormBtn.classList.remove('active'); toggleUpdateScoreFormBtn.classList.add('inactive'); });
+        function showMessage(message, type = 'info', duration = 3000) { messageDiv.textContent = message; messageDiv.className = 'fixed bottom-4 right-4 p-4 rounded-lg shadow-xl text-white z-50'; if (type === 'success') messageDiv.classList.add('bg-green-600'); else if (type === 'error') messageDiv.classList.add('bg-red-600'); else messageDiv.classList.add('bg-blue-600'); messageDiv.style.display = 'block'; setTimeout(() => { messageDiv.style.display = 'none'; messageDiv.textContent = ''; }, duration); }
+
+        addPlayerFormEl.addEventListener('submit', (e) => { e.preventDefault(); const playerName = playerNameInput.value.trim(); const score = parseInt(initialScoreInput.value); if (playerName && !isNaN(score)) { let players = getPlayersFromStorage() || []; if (players.find(p => p.name.toLowerCase() === playerName.toLowerCase())) { showMessage(`Un joueur nommé "${playerName}" existe déjà.`, 'error'); return; } const newPlayer = { id: generatePlayerId(), name: playerName, score: score }; players.push(newPlayer); savePlayersToStorage(players); showMessage('Joueur ajouté avec succès!', 'success'); addPlayerFormEl.reset(); loadLeaderboard(); } else { showMessage('Nom et score valides requis.', 'error'); } });
+        replaceScoreButton.addEventListener('click', () => { const playerId = playerSelectUpdate.value; const newScoreValue = newScoreInput.value; if (!playerId) { showMessage('Sélectionner un joueur.', 'error'); return; } if (newScoreValue === '' || isNaN(parseInt(newScoreValue))) { showMessage('Nouveau score valide requis.', 'error'); return; } const scoreToSet = parseInt(newScoreValue); let players = getPlayersFromStorage(); const playerIndex = players.findIndex(p => p.id === playerId); if (playerIndex > -1) { players[playerIndex].score = scoreToSet; savePlayersToStorage(players); showMessage('Score remplacé!', 'success'); newScoreInput.value = ''; loadLeaderboard(); } else { showMessage('Joueur non trouvé.', 'error'); } });
+        addPointsButton.addEventListener('click', () => { const playerId = playerSelectUpdate.value; const pointsString = pointsToAddInput.value; if (!playerId) { showMessage('Sélectionner un joueur.', 'error'); return; } if (pointsString === '' || isNaN(parseInt(pointsString))) { showMessage('Points valides requis.', 'error'); return; } const pointsNumber = parseInt(pointsString); let players = getPlayersFromStorage(); const playerIndex = players.findIndex(p => p.id === playerId); if (playerIndex > -1) { players[playerIndex].score += pointsNumber; savePlayersToStorage(players); showMessage(`${pointsNumber >= 0 ? '+' : ''}${pointsNumber} points! Score: ${players[playerIndex].score}`, 'success'); pointsToAddInput.value = ''; loadLeaderboard(); } else { showMessage('Joueur non trouvé.', 'error'); } });
+        function openDeleteModal(id) { playerToDeleteId = id; deleteModal.classList.remove('hidden'); deleteModal.classList.add('flex'); }
+        confirmDeleteBtn.addEventListener('click', () => { if (playerToDeleteId) { let players = getPlayersFromStorage(); players = players.filter(p => p.id !== playerToDeleteId); savePlayersToStorage(players); showMessage('Joueur supprimé!', 'success'); loadLeaderboard(); } closeDeleteModal(); });
+        cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+        function closeDeleteModal() { deleteModal.classList.add('hidden'); deleteModal.classList.remove('flex'); playerToDeleteId = null; }
+        
+        function loadLeaderboard() {
+            loadingMessageDiv.classList.remove('hidden');
+            leaderboardTable.classList.add('hidden');
+            emptyLeaderboardMessageDiv.classList.add('hidden');
+            
+            let players = initializeDefaultPlayers(); 
+            if (!players) players = getPlayersFromStorage() || [];
+
+            players.sort((a, b) => {
+                if (b.score === a.score) return a.name.localeCompare(b.name);
+                return b.score - a.score;
+            });
+
+            renderLeaderboard(players);
+            populatePlayerSelect(players);
+            
+            loadingMessageDiv.classList.add('hidden');
+            if (players.length === 0) {
+                emptyLeaderboardMessageDiv.classList.remove('hidden');
+                leaderboardTable.classList.add('hidden');
             } else {
-                alert("Code incorrect !");
+                emptyLeaderboardMessageDiv.classList.add('hidden');
+                leaderboardTable.classList.remove('hidden');
             }
         }
 
-        function addPlayer() {
-            if (!isAdmin) return;
-            const name = document.getElementById("playerName").value;
-            const score = parseInt(document.getElementById("playerScore").value);
-            if (name && !isNaN(score)) {
-                dbRef.push({ name, score });
-                document.getElementById("playerName").value = "";
-                document.getElementById("playerScore").value = "";
+        function renderLeaderboard(players) {
+            leaderboardTableBody.innerHTML = ''; 
+            if (players.length === 0) return;
+
+            players.forEach((player, index) => {
+                const rank = index + 1;
+                let medalDisplay = '';
+                let rankColorClass = 'text-gray-400';
+
+                if (rank === 1) { medalDisplay = "🥇"; rankColorClass = 'text-yellow-400'; }
+                else if (rank === 2) { medalDisplay = "🥈"; rankColorClass = 'text-gray-300'; }
+                else if (rank === 3) { medalDisplay = "🥉"; rankColorClass = 'text-yellow-600'; }
+
+                const row = leaderboardTableBody.insertRow();
+                row.className = 'table-row';
+                
+                const medalCell = row.insertCell();
+                medalCell.className = `px-3 py-4 whitespace-nowrap text-xl medal-cell ${rankColorClass}`;
+                medalCell.textContent = medalDisplay;
+
+                const rankCell = row.insertCell();
+                rankCell.className = `px-3 py-4 whitespace-nowrap text-sm font-medium rank-cell ${rankColorClass}`;
+                rankCell.textContent = rank.toString();
+                
+                const nameCell = row.insertCell();
+                nameCell.className = `px-6 py-4 whitespace-nowrap text-sm ${rank <= 3 ? 'font-semibold text-gray-100' : 'text-gray-300'}`;
+                nameCell.textContent = player.name;
+                
+                const scoreCell = row.insertCell();
+                // Application de la couleur en fonction du score (positif/négatif/zéro)
+                let scoreColorClass = 'text-gray-400'; // Défaut pour score 0
+                if (player.score > 0) {
+                    scoreColorClass = 'text-green-400';
+                } else if (player.score < 0) {
+                    scoreColorClass = 'text-red-400';
+                }
+                scoreCell.className = `px-6 py-4 whitespace-nowrap text-sm font-medium ${scoreColorClass}`;
+                scoreCell.textContent = player.score.toString();
+                
+                const actionsCell = row.insertCell();
+                actionsCell.classList.add('px-6', 'py-4', 'whitespace-nowrap', 'text-sm', 'font-medium', 'text-center');
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                deleteButton.title = "Supprimer ce joueur";
+                deleteButton.classList.add('btn', 'btn-danger', 'text-xs', 'py-1.5', 'px-2.5', 'rounded-md', 'hover:scale-105');
+                deleteButton.onclick = () => openDeleteModal(player.id);
+                actionsCell.appendChild(deleteButton);
+            });
+        }
+
+        function populatePlayerSelect(players) {
+            const currentSelectedValue = playerSelectUpdate.value; 
+            playerSelectUpdate.innerHTML = '<option value="">-- Choisir un joueur --</option>'; 
+            const sortedPlayers = [...players].sort((a,b) => a.name.localeCompare(b.name));
+            sortedPlayers.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player.id;
+                option.textContent = `${player.name} (Score: ${player.score})`;
+                playerSelectUpdate.appendChild(option);
+            });
+            if (sortedPlayers.find(p => p.id === currentSelectedValue)) {
+                playerSelectUpdate.value = currentSelectedValue;
             }
         }
 
-        function updatePlayerScore() {
-            if (!isAdmin) return;
-            const playerId = document.getElementById("playerSelect").value;
-            const points = parseInt(document.getElementById("pointsToAdd").value);
-            if (playerId && !isNaN(points)) {
-                const currentScore = playerData[playerId].score || 0;
-                db.ref("players/" + playerId).update({ score: currentScore + points });
-                document.getElementById("pointsToAdd").value = "";
-            }
-        }
-
-        dbRef.on("value", (snapshot) => {
-            const players = snapshot.val();
-            const list = document.getElementById("playerList");
-            const select = document.getElementById("playerSelect");
-            list.innerHTML = "";
-            select.innerHTML = '<option value="">-- Choisir un joueur --</option>';
-            playerData = {};
-
-            for (let id in players) {
-                const player = players[id];
-                playerData[id] = player;
-
-                list.innerHTML += `<tr><td class="border px-4 py-2">${player.name}</td><td class="border px-4 py-2">${player.score}</td></tr>`;
-                select.innerHTML += `<option value="${id}">${player.name}</option>`;
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLeaderboard();
         });
 
-        // Pour forcer l'abandon du localStorage si besoin :
-        localStorage.clear();
     </script>
+
+<script>
+  const ADMIN_PASS = "juju2025";
+  let isAdmin = false;
+
+  const dbRef = firebase.database().ref("players");
+
+  // --- Remplace les appels localStorage par Firebase ---
+
+  function getPlayersFromFirebase(callback) {
+    dbRef.once("value").then(snapshot => {
+      const data = snapshot.val() || {};
+      const players = Object.keys(data).map(id => ({ id, ...data[id] }));
+      callback(players);
+    });
+  }
+
+  function savePlayerToFirebase(player) {
+    dbRef.push(player);
+  }
+
+  function updatePlayerScoreInFirebase(id, score) {
+    dbRef.child(id).update({ score });
+  }
+
+  function deletePlayerFromFirebase(id) {
+    dbRef.child(id).remove();
+  }
+
+  function showLoginPrompt() {
+    const pass = prompt("Code admin requis pour modifier.");
+    if (pass === ADMIN_PASS) {
+      isAdmin = true;
+      showMessage("Mode admin activé", "success");
+    } else {
+      showMessage("Code incorrect", "error");
+    }
+  }
+
+  function replaceAddListenersWithFirebase() {
+    addPlayerFormEl.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!isAdmin) return showLoginPrompt();
+
+      const playerName = playerNameInput.value.trim();
+      const score = parseInt(initialScoreInput.value);
+      if (playerName && !isNaN(score)) {
+        getPlayersFromFirebase(players => {
+          if (players.find(p => p.name.toLowerCase() === playerName.toLowerCase())) {
+            showMessage(\`Un joueur nommé "\${playerName}" existe déjà.\`, 'error');
+            return;
+          }
+          const newPlayer = { name: playerName, score: score };
+          savePlayerToFirebase(newPlayer);
+          showMessage('Joueur ajouté avec succès!', 'success');
+          addPlayerFormEl.reset();
+        });
+      } else {
+        showMessage('Nom et score valides requis.', 'error');
+      }
+    });
+
+    replaceScoreButton.addEventListener('click', () => {
+      if (!isAdmin) return showLoginPrompt();
+
+      const playerId = playerSelectUpdate.value;
+      const newScoreValue = newScoreInput.value;
+      if (!playerId || newScoreValue === '' || isNaN(parseInt(newScoreValue))) {
+        return showMessage('Sélectionnez un joueur et entrez un score valide.', 'error');
+      }
+      updatePlayerScoreInFirebase(playerId, parseInt(newScoreValue));
+      showMessage('Score remplacé!', 'success');
+      newScoreInput.value = '';
+    });
+
+    addPointsButton.addEventListener('click', () => {
+      if (!isAdmin) return showLoginPrompt();
+
+      const playerId = playerSelectUpdate.value;
+      const pointsString = pointsToAddInput.value;
+      if (!playerId || pointsString === '' || isNaN(parseInt(pointsString))) {
+        return showMessage('Points valides requis.', 'error');
+      }
+      const pointsNumber = parseInt(pointsString);
+      getPlayersFromFirebase(players => {
+        const player = players.find(p => p.id === playerId);
+        if (player) {
+          updatePlayerScoreInFirebase(playerId, player.score + pointsNumber);
+          showMessage(\`\${pointsNumber >= 0 ? '+' : ''}\${pointsNumber} points appliqués\`, 'success');
+          pointsToAddInput.value = '';
+        }
+      });
+    });
+
+    confirmDeleteBtn.addEventListener('click', () => {
+      if (playerToDeleteId && isAdmin) {
+        deletePlayerFromFirebase(playerToDeleteId);
+        showMessage('Joueur supprimé!', 'success');
+      } else {
+        showLoginPrompt();
+      }
+      closeDeleteModal();
+    });
+  }
+
+  function loadLeaderboard() {
+    loadingMessageDiv.classList.remove('hidden');
+    leaderboardTable.classList.add('hidden');
+    emptyLeaderboardMessageDiv.classList.add('hidden');
+
+    dbRef.on("value", snapshot => {
+      const data = snapshot.val();
+      const players = [];
+      for (let id in data) {
+        players.push({ id, ...data[id] });
+      }
+
+      players.sort((a, b) => {
+        if (b.score === a.score) return a.name.localeCompare(b.name);
+        return b.score - a.score;
+      });
+
+      renderLeaderboard(players);
+      populatePlayerSelect(players);
+
+      loadingMessageDiv.classList.add('hidden');
+      if (players.length === 0) {
+        emptyLeaderboardMessageDiv.classList.remove('hidden');
+        leaderboardTable.classList.add('hidden');
+      } else {
+        emptyLeaderboardMessageDiv.classList.add('hidden');
+        leaderboardTable.classList.remove('hidden');
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    replaceAddListenersWithFirebase();
+    loadLeaderboard();
+  });
+</script>
+
 </body>
 </html>
