@@ -100,13 +100,22 @@
       }
 
       document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('button, input[type="submit"]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            if (!isAdmin && btn.dataset.admin === "true") {
+              e.preventDefault();
+              showLoginPrompt();
+            }
+          });
+        });
+
         const form = document.getElementById('addPlayerForm');
         if (form) {
           form.addEventListener('submit', function (e) {
             e.preventDefault();
             if (!isAdmin) return showLoginPrompt();
 
-            const name = document.getElementById('playerName').value;
+            const name = document.getElementById('playerName').value.trim();
             const score = parseInt(document.getElementById('initialScore').value) || 0;
             if (!name) return alert("Nom requis");
 
@@ -121,5 +130,7 @@
 </head>
 <body>
     <!-- Ton HTML complet ici (non modifié) -->
+    <!-- Assure-toi qu’il y a bien un formulaire avec l’ID addPlayerForm,
+         un champ avec l’ID playerName et un champ avec l’ID initialScore dans ton HTML. -->
 </body>
 </html>
